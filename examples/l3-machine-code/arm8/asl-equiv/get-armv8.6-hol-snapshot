@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
-set -e
+set -euo pipefail
 hol_root=$(git rev-parse --show-toplevel)
-git -C "$hol_root" submodule update --init -- examples/l3-machine-code/arm8/asl-equiv/armv8.6-asl-snapshot
+git -C "$hol_root" submodule update --init -- examples/l3-machine-code/arm8/asl-equiv/armv8.6-asl-snapshot-src
+
+# Build the ASL theories from an ignored copy, since disabling their enormous
+# generated documentation requires changing one source file.
+if [ -f armv8.6-asl-snapshot/.prepared ]; then exit 0; fi
+mkdir -p armv8.6-asl-snapshot
+git -C armv8.6-asl-snapshot-src archive HEAD | tar -x -C armv8.6-asl-snapshot
 cd armv8.6-asl-snapshot
 
 # Disable the large pretty-printed doc comment in armv86aTheory.sig.
@@ -11,3 +17,4 @@ script=A64_ISA_v86A/armv86aScript.sml
 if ! grep -q '"TheoryPP.include_html_docs"' "$script"; then
     perl -i -pe 'print "val _ = Feedback.set_trace \"TheoryPP.include_html_docs\" 0;\n" if /^val _ = export_theory\(\)/' "$script"
 fi
+touch .prepared

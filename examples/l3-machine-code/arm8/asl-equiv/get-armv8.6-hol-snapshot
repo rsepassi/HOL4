@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -e
-git clone https://github.com/HOL-Theorem-Prover/armv8.6-asl-snapshot.git
+hol_root=$(git rev-parse --show-toplevel)
+git -C "$hol_root" submodule update --init -- examples/l3-machine-code/arm8/asl-equiv/armv8.6-asl-snapshot
 cd armv8.6-asl-snapshot
-git checkout 9f9bb9a9e6a133876152124ce3c30993a61fa7c9
 
 # Disable the large pretty-printed doc comment in armv86aTheory.sig.
 # Without this the generated .sig is ~1.3 GB, which trips a 32-bit Int

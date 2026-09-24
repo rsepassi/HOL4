@@ -1,0 +1,3 @@
+[submodule "examples/l3-machine-code/arm8/asl-equiv/armv8.6-asl-snapshot"]
+	path = examples/l3-machine-code/arm8/asl-equiv/armv8.6-asl-snapshot
+	url = git@github.com:HOL-Theorem-Prover/armv8.6-asl-snapshot.git

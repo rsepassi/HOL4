@@ -198,8 +198,30 @@ fun updnode_fully (n, nInfo) (g : 'a t) : 'a t =
     case peeknode g n of
         NONE => raise NoSuchNode
       | SOME old_nI =>
-        bump_built_count (old_nI, #status nInfo)
-          (fupd_nodes (fn m => Map.insert(m, n, nInfo)) g)
+        let
+          val oldkey = (#dir old_nI, #command old_nI)
+          val newkey = (#dir nInfo, #command nInfo)
+          (* A placeholder can acquire a command when its own directory
+             is scanned. Keep the reverse index in sync: both status
+             assignment and execution use it to find script products. *)
+          val commands =
+              if pair_compare(hmdir.compare, command_compare)
+                             (oldkey, newkey) = EQUAL then #command_map g
+              else
+                let
+                  val remaining = List.filter (fn m => m <> n)
+                                      (find_nodes_by_command g oldkey)
+                  val removed = Map.insert (#command_map g, oldkey, remaining)
+                in
+                  extend_map_list removed newkey n
+                end
+          val g' = {nodes = Map.insert (#nodes g, n, nInfo),
+                    target_map = #target_map g, command_map = commands,
+                    file_hashes = #file_hashes g,
+                    theories_built = #theories_built g}
+        in
+          bump_built_count (old_nI, #status nInfo) g'
+        end
 
 fun add_dependency n (dn, dt) (g : 'a t) : 'a t =
     case peeknode g n of
